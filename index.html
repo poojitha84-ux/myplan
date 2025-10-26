@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MachiQuest Mobile</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+html,body{margin:0;padding:0;font-family:'Roboto',sans-serif;width:100%;height:100%;overflow-x:hidden;}
+body{
+  display:flex;flex-direction:column;align-items:center;
+  background: linear-gradient(270deg,#ff9a9e,#fad0c4,#a18cd1,#fbc2eb);
+  background-size:800% 800%;
+  animation:gradientBG 20s ease infinite;
+  color:#fff;
+}
+@keyframes gradientBG{
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
+}
+header{
+  width:100%;padding:15px;text-align:center;font-size:1.8em;font-weight:bold;
+  background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.3);
+}
+#currentTime{font-size:1em;margin-top:3px;}
+.container{
+  width:95%;max-width:480px;margin:10px 0;
+}
+.section{
+  background:rgba(0,0,0,0.3);border-radius:12px;padding:12px;margin-bottom:12px;
+}
+h2,h3{margin-top:0;color:#fff;}
+ul{list-style:none;padding:0;margin:0;}
+li{
+  padding:10px 5px;
+  border-bottom:1px solid rgba(255,255,255,0.2);
+  display:flex;justify-content:space-between;align-items:center;
+}
+li:hover{transform:scale(1.02);}
+button{
+  background:#ff6f61;border:none;color:white;padding:6px 12px;border-radius:10px;font-size:0.9em;
+  cursor:pointer;transition:transform 0.2s;
+}
+button:hover{transform:scale(1.05);}
+.tip{background:rgba(255,255,255,0.2);padding:8px;border-radius:10px;margin-top:6px;font-size:0.9em;}
+.reminder{color:#ffeb3b;font-weight:bold;font-size:0.95em;}
+.task-finished{text-decoration:line-through;color:gray;font-size:0.9em;}
+.confetti{position:fixed;width:8px;height:8px;border-radius:50%;pointer-events:none;z-index:1000;animation:fall 2s linear infinite;}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);}100%{transform:translateY(600px) rotate(360deg);opacity:0;}}
+#themeButton{position:fixed;bottom:15px;right:15px;background:#ffeb3b;color:#333;padding:10px;border-radius:50%;font-size:1.2em;border:none;cursor:pointer;}
+.modal{display:none;position:fixed;z-index:10000;left:0;top:0;width:100%;height:100%;overflow:auto;background:rgba(0,0,0,0.95);}
+.modal-content{background:rgba(0,0,0,0.95);margin:5% auto;padding:20px;border-radius:15px;width:90%;max-width:450px;}
+.close{color:#fff;float:right;font-size:28px;font-weight:bold;cursor:pointer;}
+.close:hover{color:#ff6f61;}
+.modal h3{margin-top:0;}
+.modal ul{max-height:400px;overflow:auto;padding-left:15px;font-size:0.85em;}
+.tabs{display:flex;justify-content:space-around;margin-bottom:10px;}
+.tab{padding:10px 20px;background:rgba(255,255,255,0.2);border-radius:10px;cursor:pointer;font-weight:bold;}
+.tab.active{background:#ff6f61;color:#fff;}
+.subject{padding:8px;background:rgba(255,255,255,0.1);margin:5px 0;border-radius:8px;cursor:pointer;}
+.subject:hover{background:rgba(255,255,255,0.2);}
+</style>
+</head>
+<body>
+
+<header>Machi🖤
+<div id="currentTime"></div>
+</header>
+
+<div class="container">
+
+<div class="section" id="dateSection">
+<h2>Today is:</h2>
+<p id="currentDate"></p>
+</div>
+
+<div class="section" id="examSection">
+<h2>Upcoming Exams & Reminders</h2>
+<ul id="examList"></ul>
+</div>
+
+<div class="section" id="tipsSection">
+<h2>Daily Tips & Reminders 🌟</h2>
+<div class="tip" id="dailyTip"></div>
+<div class="tip reminder" id="talkReminder">Don't forget to talk with Machi! ❤</div>
+</div>
+
+<div class="section" id="taskSection">
+<h2>Daily Tasks 📝</h2>
+<ul id="taskList">
+<li>Practice coding/app development - 30 min 💻 <button class="task-btn">Done</button></li>
+<li>Revise sem subjects for exams 📚 <button class="task-btn">Done</button></li>
+<li>Learn 1 new skill today 🚀 <button class="task-btn">Done</button></li>
+<li>Do exercises if possible 🏃 <button class="task-btn">Done</button></li>
+<li>Get ready for college 🎒 <button class="task-btn">Done</button></li>
+<li><button id="showSubjects">Go to Subjects & Topics 📖</button></li>
+</ul>
+<div class="completed-section">
+<h3>Completed Tasks ✅</h3>
+<ul id="completedTasks"></ul>
+</div>
+</div>
+
+<div class="section subject-section" id="subjectContainer" style="display:none;">
+<div class="tabs">
+<div class="tab active" id="semTab">Sem Subjects 📘</div>
+<div class="tab" id="labTab">Lab Subjects 🔬</div>
+</div>
+<div id="subjectsList"></div>
+</div>
+
+<div class="section" id="alarmSection">
+<h2>Set Alarm ⏰</h2>
+<input type="time" id="alarmTime">
+<button id="setAlarmBtn">Set Alarm</button>
+<p id="alarmMessage"></p>
+<audio id="alarmSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" preload="auto"></audio>
+</div>
+
+<button id="themeButton" onclick="toggleTheme()">🎨</button>
+
+<div id="subjectModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <ul id="modalUnits"></ul>
+  </div>
+</div>
+
+<script>
+// --- Date & Time ---
+function updateDate(){document.getElementById('currentDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+updateDate();
+function updateTime(){document.getElementById('currentTime').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});}
+setInterval(updateTime,1000);
+
+// --- Exam Reminders ---
+const exams=[
+{name:"Mid Exams",start:"2025-11-10",end:"2025-11-15"},
+{name:"Practical Exams",start:"2025-11-17",end:"2025-11-22"},
+{name:"3rd Year Sem Exams",start:"2025-11-24",end:"2025-12-13"}
+];
+function updateExamList(){
+  const today=new Date().setHours(0,0,0,0);
+  const list=document.getElementById('examList');list.innerHTML='';
+  exams.forEach(exam=>{
+    const start=new Date(exam.start).setHours(0,0,0,0);
+    const end=new Date(exam.end).setHours(0,0,0,0);
+    if(today<=end){
+      const li=document.createElement('li');
+      li.textContent=`${exam.name}: ${exam.start} to ${exam.end}`;
+      list.appendChild(li);
+    }
+  });
+}
+updateExamList();
+
+// --- Daily Tips ---
+const tipsDay=[
+"Good morning, Machi! 🌞 Start your day with energy!",
+"Keep going, Machi! 💪 You are amazing!",
+"Great progress today! 🌟 Keep learning!",
+"Time for a break! 🍎 Recharge your mind!",
+"Good night, Machi! 🌙 Rest well!"
+];
+function updateDailyTip(){
+  const now=new Date(); const hour=now.getHours();
+  let tip="";
+  if(hour>=6 && hour<12){tip=tipsDay[0];}
+  else if(hour>=12 && hour<18){tip=tipsDay[1];}
+  else if(hour>=18 && hour<22){tip=tipsDay[2];}
+  else{tip=tipsDay[4];}
+  document.getElementById('dailyTip').textContent=tip;
+}
+updateDailyTip();
+setInterval(updateDailyTip,60000);
+
+// --- Task Buttons ---
+function createConfetti(){for(let i=0;i<20;i++){const c=document.createElement('div');c.classList.add('confetti');c.style.left=Math.random()*window.innerWidth+'px';c.style.backgroundColor=`hsl(${Math.random()*360},100%,50%)`;document.body.appendChild(c);setTimeout(()=>{c.remove();},2000);}}
+const boostMessages=["Amazing work, Machi! 🎉","You’re unstoppable! 💪","Great job! 🚀","Awesome! ✨","Fantastic! 🌈"];
+function boostMessage(){alert(boostMessages[Math.floor(Math.random()*boostMessages.length)]);}
+function markDone(btn){
+  const li=btn.parentElement;
+  li.classList.add('task-finished');btn.textContent="Finished";btn.disabled=true;
+  createConfetti();boostMessage();document.getElementById('completedTasks').appendChild(li);
+}
+document.querySelectorAll('.task-btn').forEach(btn=>btn.addEventListener('click',()=>markDone(btn)));
+
+// --- Theme Toggle ---
+let dark=false;function toggleTheme(){dark=!dark;if(dark){document.body.style.background='#222';document.body.style.color='#f0f8ff';}else{document.body.style.background='linear-gradient(270deg,#ff9a9e,#fad0c4,#a18cd1,#fbc2eb)';document.body.style.color='#fff';}}
+
+// --- Notifications ---
+function notifyUser(message){if(Notification.permission==="granted"){new Notification("MachiQuest",{body:message});}else if(Notification.permission!=="denied"){Notification.requestPermission().then(p=>{if(p==="granted"){new Notification("MachiQuest",{body:message});}});}}
+function checkNotifications(){
+  const now=new Date();const hour=now.getHours();const minutes=now.getMinutes();
+  if(hour===6 && minutes===0){notifyUser("Good morning Machi! 🌞 Do exercises & get ready for college!");}
+  if(hour===12 && minutes===0){notifyUser("Hey Machi! Keep going 💪 You're doing amazing!");}
+  if(hour===18 && minutes===0){notifyUser("Hey Machi! Did you reach home? Fresh up & plan for tomorrow! 📚");}
+  if(hour===22 && minutes===0){notifyUser("Time to sleep, Machi! 🌙");}
+}
+setInterval(checkNotifications,60000);
+
+// --- Subjects ---
+const semSubjects=[
+{code:"CS23APC501",name:"Automata Theory and Compiler Design",units:["UNIT I: Fundamentals & DFA/NFA/Moore/Mealy","UNIT II: Regular Languages & CFGs","UNIT III: Pushdown Automata & Turing Machine","UNIT IV: Compiler Overview & Lexical Analysis","UNIT V: Syntax-Directed Translation & Intermediate Code"]},
+{code:"CY23APC301",name:"Computer Networks",units:["UNIT I: Types of Networks & OSI/TCP-IP Models","UNIT II: Data Link Layer & Error Handling","UNIT III: Network Layer & Routing Algorithms","UNIT IV: Transport Layer: TCP/UDP & Congestion","UNIT V: Application Layer: Email, WWW, HTTP/HTTPS"]},
+{code:"CS23APC502",name:"Data Warehousing and Data Mining",units:["UNIT I: Data Warehousing & OLAP/OLTP","UNIT II: Data Mining & Preprocessing","UNIT III: Frequent Patterns & Classification","UNIT IV: Decision Tree, Bayesian, Rule-based, SVM, Clustering","UNIT V: WEKA Tool & Datasets"]},
+{code:"BA23AMC501",name:"Business Economics and Financial",units:["Theory"]},
+{code:"EVC",name:"Entrepreneurship and Venture Creation",units:["Full Syllabus"]},
+{code:"SE",name:"Software Engineering",units:["UNIT I: Intro & Life Cycle Models","UNIT II: Project Management & Requirements","UNIT III: Software Design & Agility","UNIT IV: Coding & Testing","UNIT V: CASE & Software Maintenance"]}
+];
+const labSubjects=[
+{code:"EC23AES501",name:"Tinkering Lab 🔬",units:["Practical Exercises"]},
+{code:"CS23ASC501",name:"Full Stack Development Lab 💻",units:["Practical & Project Exercises"]},
+{code:"CY23APC302",name:"Computer Networks Lab",units:["Practical Lab Exercises"]},
+{code:"CS23APC503",name:"Data Warehousing Lab",units:["Practical Lab Exercises"]}
+];
+const subjectsList=document.getElementById('subjectsList');
+function loadSubjects(list){
+  subjectsList.innerHTML='';
+  list.forEach(sub=>{
+    const div=document.createElement('div');div.classList.add('subject');div.textContent=`${sub.code} - ${sub.name}`;
+    div.onclick=()=>openModal(sub);
+    subjectsList.appendChild(div);
+  });
+}
+
+// --- Tab Switching ---
+document.getElementById('semTab').addEventListener('click',()=>{
+  loadSubjects(semSubjects);
+  document.getElementById('semTab').classList.add('active');
+  document.getElementById('labTab').classList.remove('active');
+});
+document.getElementById('labTab').addEventListener('click',()=>{
+  loadSubjects(labSubjects);
+  document.getElementById('labTab').classList.add('active');
+  document.getElementById('semTab').classList.remove('active');
+});
+loadSubjects(semSubjects);
+
+// --- Modal ---
+function openModal(subject){
+  document.getElementById('subjectModal').style.display='block';
+  document.getElementById('modalTitle').textContent=`${subject.code} - ${subject.name}`;
+  const ul=document.getElementById('modalUnits');ul.innerHTML='';
+  subject.units.forEach(u=>{
+    const li=document.createElement('li');li.textContent=u;ul.appendChild(li);
+  });
+}
+document.querySelector('.close').onclick=function(){document.getElementById('subjectModal').style.display='none';};
+window.onclick=function(e){if(e.target==document.getElementById('subjectModal')){document.getElementById('subjectModal').style.display='none';}};
+
+// --- Show Subjects ---
+document.getElementById('showSubjects').addEventListener('click',()=>{
+  document.getElementById('subjectContainer').style.display='block';
+  document.getElementById('subjectContainer').scrollIntoView({behavior:"smooth"});
+});
+
+// --- Alarm ---
+document.getElementById('setAlarmBtn').addEventListener('click',()=>{
+  const alarmTime=document.getElementById('alarmTime').value;
+  if(!alarmTime){alert("Set a valid time!"); return;}
+  const now=new Date(); const [h,m]=alarmTime.split(':'); 
+  const alarmDate=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,m,0);
+  if(alarmDate<now){alarmDate.setDate(alarmDate.getDate()+1);}
+  const diff=alarmDate-now;
+  document.getElementById('alarmMessage').textContent=`Alarm set for ${alarmDate.toLocaleTimeString()}`;
+  setTimeout(()=>{document.getElementById('alarmSound').play(); alert("⏰ Alarm! Time, Machi!");},diff);
+});
+</script>
+</body>
+</html>
